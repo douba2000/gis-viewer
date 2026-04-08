@@ -15,7 +15,7 @@ body {
 
 /* 地図 */
 #map { 
-  flex:2; 
+  flex:4; 
   position:relative; 
   transition:flex 0.3s;
   height:100vh; /* ←追加（地図消える対策） */
@@ -37,6 +37,11 @@ body {
   padding:4px; 
   cursor:pointer; 
   text-align:right; 
+}
+
+#dataTable td:nth-child(n+2),
+#dataTable th:nth-child(n+2) {
+  display: none;
 }
 
 /* 表ラッパー */
@@ -136,6 +141,7 @@ tbody tr:hover {
     <label>最大値: <input id="maxValue" type="number" placeholder="自動"></label>
     <label>段階数: <input id="steps" type="number" placeholder="10"></label>
     <button id="applyColorScale">適用</button>
+   <input type="text" id="searchInput" placeholder="圃場名を検索">
   </div>
   <div id="legend"></div>
 </div>
@@ -188,8 +194,13 @@ function addRow(rowData){
     tr.style.backgroundColor="#ffd";
     selectedPolygons=tr.polygons||[];
     selectedPolygons.forEach(poly=>{
-      poly.setStyle({color:'yellow', fillColor:'yellow', weight:3, fillOpacity:1});
-    });
+  poly.setStyle({
+    color: 'yellow',
+    weight: 4,
+    fillColor: poly.originalColor,
+    fillOpacity: 1
+  });
+});;
     if(selectedPolygons.length>0){
       let latSum=0,lngSum=0,count=0;
       selectedPolygons.forEach(poly=>{
@@ -403,6 +414,20 @@ toggleArrow.addEventListener("click",()=>{
   tableWrapper.classList.toggle("collapsed");
   toggleArrow.innerHTML = rightPanel.classList.contains("collapsed") ? "&#9654;" : "&#9664;";
   setTimeout(()=>map.invalidateSize(), 310);
+});
+
+document.getElementById("searchInput").addEventListener("input", function() {
+  const keyword = this.value.toLowerCase();
+  const rows = document.querySelectorAll("#tableBody tr");
+
+  rows.forEach(tr => {
+    const name = tr.children[0]?.innerText.toLowerCase() || "";
+    if (name.includes(keyword)) {
+      tr.style.display = "";
+    } else {
+      tr.style.display = "none";
+    }
+  });
 });
 </script>
 
