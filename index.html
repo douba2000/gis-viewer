@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>道端GIS - 完全版 横画面最適化</title>
+<title>道端GIS - Viewer</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
@@ -72,12 +72,32 @@ button, select, input {
   margin-bottom:5px; 
 }
 
+/* controls開閉用 */
+#controlsHeader { margin-bottom:5px; }
+#controls.collapsed > *:not(#controlsHeader) { display:none; }
+
 /* ⭐ここが重要（修正済み） */
 #dataTable {
   border-collapse: collapse;
   width: max-content; 
   font-size:16px;
   table-layout: auto;
+}
+
+/* 右パネル矢印を大きくする */
+#toggleArrow {
+  font-size: 28px;       /* 大きく見やすく */
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 10px;     /* クリックしやすい範囲 */
+}
+
+/* 左上操作パネル矢印を大きくする */
+#controlsToggle {
+  font-size: 28px;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 10px;
 }
 
 /* ⭐縦文字防止 */
@@ -135,13 +155,16 @@ tbody tr:hover {
 
 <div id="map">
   <div id="controls">
+    <div id="controlsHeader" style="text-align:right; cursor:pointer;">
+      <span id="controlsToggle">&#9660;</span>
+    </div>
     <button id="importCsvBtn">CSV読み込み</button>
     <label>色分け列: <select id="colorColumnSelect"></select></label>
     <label>最小値: <input id="minValue" type="number" placeholder="自動"></label>
     <label>最大値: <input id="maxValue" type="number" placeholder="自動"></label>
     <label>段階数: <input id="steps" type="number" placeholder="10"></label>
     <button id="applyColorScale">適用</button>
-   <input type="text" id="searchInput" placeholder="圃場名を検索">
+    <input type="text" id="searchInput" placeholder="圃場名を検索">
   </div>
   <div id="legend"></div>
 </div>
@@ -428,6 +451,15 @@ document.getElementById("searchInput").addEventListener("input", function() {
       tr.style.display = "none";
     }
   });
+});
+
+const controls = document.getElementById("controls");
+const controlsToggle = document.getElementById("controlsToggle");
+
+controlsToggle.addEventListener("click", () => {
+  controls.classList.toggle("collapsed");
+  controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
+  setTimeout(() => map.invalidateSize(), 310); // 地図リサイズ
 });
 </script>
 
