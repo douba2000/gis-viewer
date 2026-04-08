@@ -6,14 +6,14 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
-body { 
+body {
   margin:0; 
   display:flex; 
   height:100vh; 
   font-family:sans-serif; 
   padding-top: env(safe-area-inset-top);
-  padding-left: calc(env(safe-area-inset-left) + 10px);   /* 左余白 */
-  padding-right: calc(env(safe-area-inset-right) + 10px); /* 右余白 */
+  padding-left: 10px;   /* 左余白 */
+  padding-right: 10px;  /* 右余白 */
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -156,8 +156,12 @@ tbody tr:hover {
 }
 
 /* スマホ対応 */
-
 @media (max-width: 800px) {
+  body {
+    padding-left: calc(10px + env(safe-area-inset-left, 0px));
+    padding-right: calc(10px + env(safe-area-inset-right, 0px));
+  }
+
   #map { flex:3; }
 
   #rightPanel { 
@@ -177,7 +181,7 @@ tbody tr:hover {
     padding: 4px 6px !important;
     font-size: 16px !important;  
   }
-} /* ←この閉じ括弧が必須 */
+}
 </style>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
