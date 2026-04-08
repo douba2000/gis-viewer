@@ -136,19 +136,19 @@ tbody tr:hover {
 }
 
 /* 凡例 */
-#legend { 
-  position: absolute;
-  bottom: calc(5px + env(safe-area-inset-bottom));
-  left: calc(5px + env(safe-area-inset-left));
-  width: 200px;        /* 横幅を固定 */
-  max-height: 50%;      /* 高さが長くなったらスクロール */
-  overflow-y: auto;     /* 縦スクロール */
+#legend {
+  position: relative;  /* 操作パネル内に従う */
+  bottom: auto;
+  left: auto;
+  max-height: 40vh;   /* パネル内でスクロール可能 */
+  overflow-y: auto;
+  width: 100%;
+  border: 1px solid #999;
   background: white;
   padding: 5px;
-  border: 1px solid #999;
   font-size: 14px;
-  z-index: 999;         /* パネルの下 */
-}
+  z-index: auto;
+}}
 
 /* スマホ対応 */
 
@@ -193,9 +193,11 @@ tbody tr:hover {
       <label>段階数: <input id="steps" type="number" placeholder="10"></label>
       <button id="applyColorScale">適用</button>
       <input type="text" id="searchInput" placeholder="圃場名を検索">
+
+      <!-- 凡例をここに移動 -->
+      <div id="legend"></div>
     </div>
   </div>
-  <div id="legend"></div>
 </div>
 
 <div id="rightPanel">
@@ -236,41 +238,38 @@ function addRow(rowData){
   const areaTd=document.createElement("td"); areaTd.className="areaCell"; tr.appendChild(areaTd);
   const landUseTd=document.createElement("td"); landUseTd.className="landUseCell"; tr.appendChild(landUseTd);
 
-  tr.addEventListener("click",()=>{
-    if(selectedRow){
-      selectedRow.style.backgroundColor="";
-      selectedPolygons.forEach(poly=>{
-        poly.setStyle({color:poly.originalColor, fillColor:poly.originalColor, weight:2, fillOpacity:1});
-      });
-    }
-    selectedRow=tr;
-    tr.style.backgroundColor="#ffd";
-    selectedPolygons=tr.polygons||[];
-    selectedPolygons.forEach(poly=>{
-  poly.setStyle({
-    color: 'yellow',
-    weight: 4,
-    fillColor: poly.originalColor,
-    fillOpacity: 1
-  });
-});;
-    if(selectedPolygons.length>0){
-      let latSum=0,lngSum=0,count=0;
-      selectedPolygons.forEach(poly=>{
-        poly.getLatLngs()[0].forEach(latlng=>{
-          latSum+=latlng.lat; lngSum+=latlng.lng; count++;
-        });
-      });
-      if(count>0) map.panTo([latSum/count,lngSum/count]);
-      tr.scrollIntoView({behavior:"smooth", block:"center"});
-    }
-  });
+  tr.addEventListener("click",()=>selectRow(tr));
 
   tbody.appendChild(tr);
   return tr;
 }
 
-// recolorPolygonsByColumn 関数は元のまま
+function selectRow(tr){
+  if(selectedRow){
+    selectedRow.style.backgroundColor="";
+    selectedPolygons.forEach(poly=>{
+      poly.setStyle({color:poly.originalColor, fillColor:poly.originalColor, weight:2, fillOpacity:1});
+    });
+  }
+  selectedRow=tr;
+  tr.style.backgroundColor="#ffd";
+  selectedPolygons=tr.polygons||[];
+  selectedPolygons.forEach(poly=>{
+    poly.setStyle({color:'yellow', weight:4, fillColor:poly.originalColor, fillOpacity:1});
+  });
+
+  if(selectedPolygons.length>0){
+    let latSum=0,lngSum=0,count=0;
+    selectedPolygons.forEach(poly=>{
+      poly.getLatLngs()[0].forEach(latlng=>{
+        latSum+=latlng.lat; lngSum+=latlng.lng; count++;
+      });
+    });
+    if(count>0) map.panTo([latSum/count,lngSum/count]);
+    tr.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+}
+
 function recolorPolygonsByColumn(columnKey){
   const legendDiv=document.getElementById("legend"); legendDiv.innerHTML="";
 
@@ -340,7 +339,6 @@ function recolorPolygonsByColumn(columnKey){
 function importCSV(){
   const input=document.createElement("input");
   input.type="file"; input.accept=".csv"; input.style.display="none";
-  // スマホでも確実に動くようにユーザー操作直後に click
   document.body.appendChild(input);
   input.addEventListener("change",e=>{
     const file=e.target.files[0]; if(!file) return;
@@ -382,60 +380,16 @@ function importCSV(){
             const decoded=JSON.parse(atob(polyVal));
             if(Array.isArray(decoded)){
               tr.polygons=[];
-             decoded.forEach(latlngs=>{
-  if(!latlngs||latlngs.length===0) return;
+              decoded.forEach(latlngs=>{
+                if(!latlngs||latlngs.length===0) return;
 
-  const poly=L.polygon(latlngs,{
-    color:'gray',
-    weight:2,
-    fillOpacity:1
-  }).addTo(map);
+                const poly=L.polygon(latlngs,{color:'gray',weight:2,fillOpacity:1}).addTo(map);
+                poly.originalColor='gray';
+                polygonMap.push({poly,row:tr});
+                tr.polygons.push(poly);
 
-  poly.originalColor='gray';
-  polygonMap.push({poly,row:tr});
-  tr.polygons.push(poly);
-
-  // ⭐ここ追加（ポリゴンクリック）
-  poly.on("click", ()=>{
-
-    // 前の選択解除
-    if(selectedRow){
-      selectedRow.style.backgroundColor="";
-      selectedPolygons.forEach(p=>{
-        p.setStyle({
-          color:p.originalColor,
-          fillColor:p.originalColor,
-          weight:2
-        });
-      });
-    }
-
-    // 新しく選択
-    selectedRow = tr;
-    selectedPolygons = tr.polygons || [];
-
-    // 行ハイライト
-    tr.style.backgroundColor = "#ffd";
-
-    // ポリゴン強調
- selectedPolygons.forEach(p=>{
-  p.setStyle({
-    color: 'yellow',
-    weight: 4,
-    fillColor: p.originalColor,
-    fillOpacity: 1
-  });
-});
-
-    // ⭐スクロール（ここが本題）
-    tr.scrollIntoView({
-      behavior:"smooth",
-      block:"center"
-    });
-
-  });
-
-});
+                poly.on("click", ()=>selectRow(tr));
+              });
             }
           }catch(err){ console.warn("ポリゴン復元失敗",err); }
         }
@@ -472,42 +426,24 @@ toggleArrow.addEventListener("click",()=>{
 document.getElementById("searchInput").addEventListener("input", function() {
   const keyword = this.value.toLowerCase();
   const rows = document.querySelectorAll("#tableBody tr");
-
   rows.forEach(tr => {
     const name = tr.children[0]?.innerText.toLowerCase() || "";
-    if (name.includes(keyword)) {
-      tr.style.display = "";
-    } else {
-      tr.style.display = "none";
-    }
+    tr.style.display = name.includes(keyword) ? "" : "none";
   });
 });
 
 const controls = document.getElementById("controls");
 const controlsToggle = document.getElementById("controlsToggle");
-const legend = document.getElementById("legend");
 
-// 初期表示
-legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
-
-// クリック・タッチ両対応
 function toggleControls() {
-  // パネル開閉クラスを切り替え
   controls.classList.toggle("collapsed");
   controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
-
-  // 凡例表示の制御（パネルが閉じてる時だけ表示）
-  legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
-
-  // パネルが地図を覆ってる場合にサイズ再計算
   setTimeout(() => map.invalidateSize(), 310);
 }
 
-// クリック
 controlsToggle.addEventListener("click", toggleControls);
-// タッチ
 controlsToggle.addEventListener("touchstart", (e) => { 
-  e.preventDefault(); // タッチ時の二重動作防止
+  e.preventDefault();
   toggleControls();
 }, {passive:false});
 </script>
