@@ -112,10 +112,12 @@ button, select, input {
 
 /* 左上操作パネル矢印を大きくする */
 #controlsToggle {
+  position: relative;  /* 絶対位置をやめる */
   font-size: 24px;
   cursor: pointer;
   user-select: none;
-  padding: 6px 6px;
+  z-index: 10;
+  margin-left: auto;  /* 右端に寄せる */
 }
 
 /* ⭐縦文字防止 */
@@ -137,18 +139,18 @@ tbody tr:hover {
 
 /* 凡例 */
 #legend {
-  position: relative;
-  bottom: auto;
-  left: auto;
-  max-height: 80vh;
+  position: absolute;
+  top: 100%; /* controlsの下端に合わせる */
+  left: 0;
+  width: 200px;
+  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px);
   overflow-y: auto;
-  width: 100%;
-  border: 1px solid #999;
-  background: white;
-  padding: 5px;
-  font-size: 14px;
-  -webkit-overflow-scrolling: touch; /* スムーズスクロール */
-  touch-action: pan-y;               /* 縦スクロールだけを伝える */
+  border:1px solid #999;
+  background:white;
+  padding:5px;
+  font-size:14px;
+  display:none;
+  z-index:999;
 }
 
 /* スマホ対応 */
@@ -194,11 +196,11 @@ tbody tr:hover {
       <label>段階数: <input id="steps" type="number" placeholder="10"></label>
       <button id="applyColorScale">適用</button>
       <input type="text" id="searchInput" placeholder="圃場名を検索">
-
-      <!-- 凡例をここに移動 -->
-      <div id="legend"></div>
     </div>
   </div>
+
+  <!-- 凡例はここに置く -->
+  <div id="legend"></div>
 </div>
 
 <div id="rightPanel">
@@ -436,9 +438,22 @@ document.getElementById("searchInput").addEventListener("input", function() {
 const controls = document.getElementById("controls");
 const controlsToggle = document.getElementById("controlsToggle");
 
+// toggleControls関数内で凡例の表示位置を更新
 function toggleControls() {
   controls.classList.toggle("collapsed");
   controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
+
+  const legend = document.getElementById("legend");
+  if (controls.classList.contains("collapsed")) {
+    legend.style.display = "block";
+    // controlsの下端に合わせる
+    const rect = controls.getBoundingClientRect();
+    legend.style.top = rect.bottom + "px";
+    legend.style.left = rect.left + "px";
+  } else {
+    legend.style.display = "none";
+  }
+
   setTimeout(() => map.invalidateSize(), 310);
 }
 
