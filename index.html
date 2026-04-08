@@ -11,10 +11,9 @@ body {
   display:flex; 
   height:100vh; 
   font-family:sans-serif; 
-  /* ノッチ・安全領域対応 */
   padding-top: env(safe-area-inset-top);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-left: calc(env(safe-area-inset-left) + 10px);   /* 左余白 */
+  padding-right: calc(env(safe-area-inset-right) + 10px); /* 右余白 */
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -83,7 +82,7 @@ button, select, input {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 6px 10px;
+  padding: 6px 6px;
   background: rgba(240,240,240,0.9);
   border-radius: 6px;
   user-select: none;
@@ -446,9 +445,9 @@ function toggleControls() {
   const legend = document.getElementById("legend");
   if (controls.classList.contains("collapsed")) {
     legend.style.display = "block";
-    // controlsの下端に合わせる
+    // controlsの下端 + 隙間10pxに設定
     const rect = controls.getBoundingClientRect();
-    legend.style.top = rect.bottom + "px";
+    legend.style.top = (rect.bottom + 10) + "px"; // ←ここで隙間を追加
     legend.style.left = rect.left + "px";
   } else {
     legend.style.display = "none";
