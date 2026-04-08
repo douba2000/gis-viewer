@@ -479,27 +479,27 @@ document.getElementById("searchInput").addEventListener("input", function() {
 
 const controls = document.getElementById("controls");
 const controlsToggle = document.getElementById("controlsToggle");
-const legend = document.getElementById("legend"); // 凡例要素
+const legend = document.getElementById("legend");
 
 // 初期表示
 legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
 
-controlsToggle.addEventListener("click", () => {
-  // パネルの開閉
+// クリック・タッチ両対応
+function toggleControls() {
   controls.classList.toggle("collapsed");
-
-  // 矢印は常に controlsToggle に表示
   controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
-
-  // パネルが開閉しても地図サイズを調整
-  setTimeout(() => map.invalidateSize(), 310);
-
-  // 凡例表示の切り替え
   legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
-
-  // 操作パネルを最前面に
   controls.style.zIndex = 1000;
-});
+  setTimeout(() => map.invalidateSize(), 310);
+}
+
+// クリック
+controlsToggle.addEventListener("click", toggleControls);
+// タッチ
+controlsToggle.addEventListener("touchstart", (e) => { 
+  e.preventDefault(); // タッチ時の二重動作防止
+  toggleControls();
+}, {passive:false});
 </script>
 
 </body>
