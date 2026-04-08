@@ -3,16 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>道端GIS - Viewer</title>
+  <title>簡易GIS - Viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  ...
-</head>
-<title>道端GIS - Viewer</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
+ 
 <style>
 body {
   margin:0; 
@@ -30,7 +25,7 @@ body {
   flex:4; 
   position:relative; 
   transition:flex 0.3s;
-  height:100vh;
+  height:100%;
 }
 
 /* 右パネル */
@@ -433,12 +428,12 @@ const rightPanel = document.getElementById("rightPanel");
 const tableWrapper = document.getElementById("tableWrapper");
 const toggleArrow = document.getElementById("toggleArrow");
 
-toggleArrow.addEventListener("click",()=>{
+toggleArrow.addEventListener("click", ()=>{
   rightPanel.classList.toggle("collapsed");
   tableWrapper.classList.toggle("collapsed");
   toggleArrow.innerHTML = rightPanel.classList.contains("collapsed") ? "&#9654;" : "&#9664;";
-  setTimeout(()=>map.invalidateSize(), 310);
 });
+rightPanel.addEventListener("transitionend", ()=>{ map.invalidateSize(); });
 
 document.getElementById("searchInput").addEventListener("input", function() {
   const keyword = this.value.toLowerCase();
