@@ -28,6 +28,7 @@ body {
   flex-direction:column; 
   border-left:1px solid #ccc; 
   transition:flex 0.3s; 
+  min-width: 0;
 }
 #rightPanel.collapsed { flex:0; }
 
@@ -69,7 +70,7 @@ button, select, input {
 /* ⭐ここが重要（修正済み） */
 #dataTable {
   border-collapse: collapse;
-  width: 100%;          /* ←修正 */
+  width: max-content; 
   font-size:16px;
   table-layout: auto;
 }
