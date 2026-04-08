@@ -137,18 +137,19 @@ tbody tr:hover {
 
 /* 凡例 */
 #legend {
-  position: relative;  /* 操作パネル内に従う */
+  position: relative;
   bottom: auto;
   left: auto;
-  max-height: 80vh;   /* パネル内でスクロール可能 */
+  max-height: 80vh;
   overflow-y: auto;
   width: 100%;
   border: 1px solid #999;
   background: white;
   padding: 5px;
   font-size: 14px;
-  z-index: auto;
-}}
+  -webkit-overflow-scrolling: touch; /* スムーズスクロール */
+  touch-action: pan-y;               /* 縦スクロールだけを伝える */
+}
 
 /* スマホ対応 */
 
