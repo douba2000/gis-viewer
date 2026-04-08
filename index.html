@@ -11,6 +11,11 @@ body {
   display:flex; 
   height:100vh; 
   font-family:sans-serif; 
+  /* ノッチ・安全領域対応 */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 地図 */
@@ -18,7 +23,7 @@ body {
   flex:4; 
   position:relative; 
   transition:flex 0.3s;
-  height:100vh; /* ←追加（地図消える対策） */
+  height:100vh;
 }
 
 /* 右パネル */
@@ -47,7 +52,7 @@ body {
 /* 表ラッパー */
 #tableWrapper {
   flex:1;
-  overflow-x:auto;  /* ←横スクロール */
+  overflow-x:auto;  
   overflow-y:auto;
   transition:height 0.3s;
 }
@@ -63,8 +68,8 @@ body {
   box-shadow: 0 3px 8px rgba(0,0,0,0.3);
   z-index:1000; 
   position:absolute; 
-  top:5px; 
-  left:5px;
+  top: calc(5px + env(safe-area-inset-top));
+  left: calc(5px + env(safe-area-inset-left));
 }
 
 button, select, input { 
@@ -73,18 +78,18 @@ button, select, input {
 }
 
 /* controls開閉用 */
-#controlsHeader { margin-bottom:5px; }
-#controls.collapsed > *:not(#controlsHeader) { display:none; }
-
-#controlsHeader {
+#controlsHeader { 
+  margin-bottom:5px; 
   display: flex;
-  justify-content: flex-end; /* 右寄せ */
-  align-items: center;        /* 上下中央 */
-  padding: 6px 10px;          /* 押しやすく */
+  justify-content: flex-end;
+  align-items: center;
+  padding: 6px 10px;
   background: rgba(240,240,240,0.9);
   border-radius: 6px;
   user-select: none;
 }
+#controlsBody { display: flex; flex-direction: column; }
+#controls.collapsed #controlsBody { display: none; }
 
 /* ⭐ここが重要（修正済み） */
 #dataTable {
@@ -96,10 +101,10 @@ button, select, input {
 
 /* 右パネル矢印を大きくする */
 #toggleArrow {
-  font-size: 28px;       /* 大きく見やすく */
+  font-size: 28px;       
   cursor: pointer;
   user-select: none;
-  padding: 6px 10px;     /* クリックしやすい範囲 */
+  padding: 6px 10px;     
 }
 
 /* 左上操作パネル矢印を大きくする */
@@ -117,7 +122,7 @@ th, td {
   text-align:left; 
   box-sizing:border-box;
   white-space: nowrap;
-  word-break: keep-all; /* ←追加 */
+  word-break: keep-all; 
 }
 
 th { background:#eee; }
@@ -130,8 +135,8 @@ tbody tr:hover {
 /* 凡例 */
 #legend { 
   position:absolute; 
-  bottom:5px; 
-  left:5px; 
+  bottom: calc(5px + env(safe-area-inset-bottom));
+  left: calc(5px + env(safe-area-inset-left));
   background:white; 
   padding:5px; 
   border:1px solid #999; 
@@ -155,10 +160,10 @@ tbody tr:hover {
     width: max-content;
     min-width: 100%;
   }
- #controls > :not(#controlsHeader) {
-    margin-top: 8px;  /* 上の隙間 */
+  #controlsHeader {
+    padding: 4px 6px; /* 小さく */
+    font-size: 16px;  
   }
-}
 }
 </style>
 
@@ -169,16 +174,18 @@ tbody tr:hover {
 
 <div id="map">
   <div id="controls">
-    <div id="controlsHeader" style="text-align:right; cursor:pointer;">
+    <div id="controlsHeader">
       <span id="controlsToggle">&#9660;</span>
     </div>
-    <button id="importCsvBtn">CSV読み込み</button>
-    <label>色分け列: <select id="colorColumnSelect"></select></label>
-    <label>最小値: <input id="minValue" type="number" placeholder="自動"></label>
-    <label>最大値: <input id="maxValue" type="number" placeholder="自動"></label>
-    <label>段階数: <input id="steps" type="number" placeholder="10"></label>
-    <button id="applyColorScale">適用</button>
-    <input type="text" id="searchInput" placeholder="圃場名を検索">
+    <div id="controlsBody">
+      <button id="importCsvBtn">CSV読み込み</button>
+      <label>色分け列: <select id="colorColumnSelect"></select></label>
+      <label>最小値: <input id="minValue" type="number" placeholder="自動"></label>
+      <label>最大値: <input id="maxValue" type="number" placeholder="自動"></label>
+      <label>段階数: <input id="steps" type="number" placeholder="10"></label>
+      <button id="applyColorScale">適用</button>
+      <input type="text" id="searchInput" placeholder="圃場名を検索">
+    </div>
   </div>
   <div id="legend"></div>
 </div>
@@ -192,6 +199,7 @@ tbody tr:hover {
     </table>
   </div>
 </div>
+
 
 <script>
 let map = L.map('map', { 
@@ -471,9 +479,17 @@ const controls = document.getElementById("controls");
 const controlsToggle = document.getElementById("controlsToggle");
 
 controlsToggle.addEventListener("click", () => {
+  // パネルの開閉
   controls.classList.toggle("collapsed");
+
+  // 矢印は常に controlsToggle に表示
   controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
-  setTimeout(() => map.invalidateSize(), 310); // 地図リサイズ
+
+  // パネルが開閉しても地図サイズを調整
+  setTimeout(() => map.invalidateSize(), 310);
+
+  // ⭐ 凡例に被った場合でも toggle が押せるように z-index を最前面に
+  controls.style.zIndex = 1000;
 });
 </script>
 
