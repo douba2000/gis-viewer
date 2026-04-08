@@ -2,6 +2,14 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>道端GIS - Viewer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  ...
+</head>
 <title>道端GIS - Viewer</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -12,8 +20,8 @@ body {
   height:100vh; 
   font-family:sans-serif; 
   padding-top: env(safe-area-inset-top);
-  padding-left: 30px;   /* 左余白 */
-  padding-right: 30px;  /* 右余白 */
+  padding-left: 35px;   /* 左余白 */
+  padding-right: 35px;  /* 右余白 */
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -103,7 +111,7 @@ button, select, input {
 
 /* 右パネル矢印を大きくする */
 #toggleArrow {
-  font-size: 28px;       
+  font-size: 24px;       
   cursor: pointer;
   user-select: none;
   padding: 6px 10px;     
@@ -158,8 +166,8 @@ tbody tr:hover {
 /* スマホ対応 */
 @media (max-width: 800px) {
   body {
-    padding-left: calc(30px + env(safe-area-inset-left, 0px));
-    padding-right: calc(30px + env(safe-area-inset-right, 0px));
+    padding-left: calc(35px + env(safe-area-inset-left, 0px));
+    padding-right: calc(35px + env(safe-area-inset-right, 0px));
   }
 
   #map { flex:3; }
@@ -468,6 +476,15 @@ controlsToggle.addEventListener("touchstart", (e) => {
   e.preventDefault();
   toggleControls();
 }, {passive:false});
+
+// 入力後にキーボード閉じても画面を戻す
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("blur", () => {
+  setTimeout(() => {
+    map.invalidateSize();   // Leaflet地図を正しくリサイズ
+    window.scrollTo(0,0);  // 画面を上に戻す
+  }, 300);  // キーボードが閉じるのを少し待つ
+});
 </script>
 
 </body>
