@@ -486,17 +486,14 @@ legend.style.display = controls.classList.contains("collapsed") ? "block" : "non
 
 // クリック・タッチ両対応
 function toggleControls() {
+  // パネル開閉クラスを切り替え
   controls.classList.toggle("collapsed");
   controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
 
-  // 凡例表示の制御
-  if(window.innerWidth <= 800){ // スマホ
-    legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
-  } else {
-    legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
-  }
+  // 凡例表示の制御（パネルが閉じてる時だけ表示）
+  legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
 
-  controls.style.zIndex = 1000;
+  // パネルが地図を覆ってる場合にサイズ再計算
   setTimeout(() => map.invalidateSize(), 310);
 }
 
