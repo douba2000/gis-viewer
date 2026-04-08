@@ -4,53 +4,118 @@
 <meta charset="UTF-8">
 <title>道端GIS - 完全版 横画面最適化</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<style>
-body { margin:0; display:flex; height:100vh; font-family:sans-serif; }
 
-#map { flex:2; position:relative; transition:flex 0.3s; }
-#rightPanel { flex:1; display:flex; flex-direction:column; border-left:1px solid #ccc; transition:flex 0.3s; }
+<style>
+body { 
+  margin:0; 
+  display:flex; 
+  height:100vh; 
+  font-family:sans-serif; 
+}
+
+/* 地図 */
+#map { 
+  flex:2; 
+  position:relative; 
+  transition:flex 0.3s;
+  height:100vh; /* ←追加（地図消える対策） */
+}
+
+/* 右パネル */
+#rightPanel { 
+  flex:1; 
+  display:flex; 
+  flex-direction:column; 
+  border-left:1px solid #ccc; 
+  transition:flex 0.3s; 
+}
 #rightPanel.collapsed { flex:0; }
 
-#panelHeader { background:#eee; padding:4px; cursor:pointer; text-align:right; }
+#panelHeader { 
+  background:#eee; 
+  padding:4px; 
+  cursor:pointer; 
+  text-align:right; 
+}
+
+/* 表ラッパー */
 #tableWrapper {
   flex:1;
-  overflow-x:auto;  
+  overflow-x:auto;  /* ←横スクロール */
   overflow-y:auto;
   transition:height 0.3s;
 }
 #tableWrapper.collapsed { display:none; }
 
+/* 操作パネル */
 #controls {
   padding:10px;
-  display:flex; flex-direction:column;
+  display:flex; 
+  flex-direction:column;
   background: rgba(255,255,255,0.95);
-  border-radius:8px; box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-  z-index:1000; position:absolute; top:5px; left:5px;
+  border-radius:8px; 
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  z-index:1000; 
+  position:absolute; 
+  top:5px; 
+  left:5px;
 }
-button, select, input { font-size:16px; margin-bottom:5px; }
 
+button, select, input { 
+  font-size:16px; 
+  margin-bottom:5px; 
+}
+
+/* ⭐ここが重要（修正済み） */
 #dataTable {
   border-collapse: collapse;
-  width: max-content;  
-  min-width: 100%;     
+  width: 100%;          /* ←修正 */
   font-size:16px;
-  table-layout: auto;   
+  table-layout: auto;
 }
-th, td { border:1px solid #ccc; padding:4px 8px; text-align:left; box-sizing:border-box;white-space: nowrap; }
+
+/* ⭐縦文字防止 */
+th, td { 
+  border:1px solid #ccc; 
+  padding:4px 8px; 
+  text-align:left; 
+  box-sizing:border-box;
+  white-space: nowrap;
+  word-break: keep-all; /* ←追加 */
+}
+
 th { background:#eee; }
-tbody tr:hover { background:#f0f0f0; cursor:pointer; }
 
-#legend { position:absolute; bottom:5px; left:5px; background:white; padding:5px; border:1px solid #999; font-size:14px; z-index:1000; }
+tbody tr:hover { 
+  background:#f0f0f0; 
+  cursor:pointer; 
+}
 
+/* 凡例 */
+#legend { 
+  position:absolute; 
+  bottom:5px; 
+  left:5px; 
+  background:white; 
+  padding:5px; 
+  border:1px solid #999; 
+  font-size:14px; 
+  z-index:1000; 
+}
+
+/* スマホ対応 */
 @media (max-width: 800px) {
   #map { flex:3; }
   #rightPanel { flex:1; }
+
   button, select, input { font-size:14px; }
   #dataTable { font-size:14px; }
 }
 </style>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
+
 <body>
 
 <div id="map">
@@ -243,13 +308,60 @@ function importCSV(){
             const decoded=JSON.parse(atob(polyVal));
             if(Array.isArray(decoded)){
               tr.polygons=[];
-              decoded.forEach(latlngs=>{
-                if(!latlngs||latlngs.length===0) return;
-                const poly=L.polygon(latlngs,{color:'gray',weight:2,fillOpacity:1}).addTo(map);
-                poly.originalColor='gray';
-                polygonMap.push({poly,row:tr});
-                tr.polygons.push(poly);
-              });
+             decoded.forEach(latlngs=>{
+  if(!latlngs||latlngs.length===0) return;
+
+  const poly=L.polygon(latlngs,{
+    color:'gray',
+    weight:2,
+    fillOpacity:1
+  }).addTo(map);
+
+  poly.originalColor='gray';
+  polygonMap.push({poly,row:tr});
+  tr.polygons.push(poly);
+
+  // ⭐ここ追加（ポリゴンクリック）
+  poly.on("click", ()=>{
+
+    // 前の選択解除
+    if(selectedRow){
+      selectedRow.style.backgroundColor="";
+      selectedPolygons.forEach(p=>{
+        p.setStyle({
+          color:p.originalColor,
+          fillColor:p.originalColor,
+          weight:2
+        });
+      });
+    }
+
+    // 新しく選択
+    selectedRow = tr;
+    selectedPolygons = tr.polygons || [];
+
+    // 行ハイライト
+    tr.style.backgroundColor = "#ffd";
+
+    // ポリゴン強調
+ selectedPolygons.forEach(p=>{
+  p.setStyle({
+    color: 'yellow',
+    weight: 4,
+    fillColor: p.originalColor,
+    fillOpacity: 1
+  });
+});
+
+    // ⭐スクロール（ここが本題）
+    tr.scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+
+  });
+
+});
             }
           }catch(err){ console.warn("ポリゴン復元失敗",err); }
         }
