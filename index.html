@@ -139,10 +139,10 @@ tbody tr:hover {
 /* 凡例 */
 #legend {
   position: absolute;
-  top: 100%; /* controlsの下端に合わせる */
-  left: 0;
+  top: calc(24px + 10px + env(safe-area-inset-top));
+  left: calc(5px + env(safe-area-inset-left));
   width: 200px;
-  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px);
+  max-height: calc(100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow-y: auto;
   border:1px solid #999;
   background:white;
@@ -150,6 +150,9 @@ tbody tr:hover {
   font-size:14px;
   display:none;
   z-index:999;
+
+  /* 追加 */
+  touch-action: pan-y;   /* 縦スクロールだけ許可 */
 }
 
 /* スマホ対応 */
