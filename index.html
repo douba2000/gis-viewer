@@ -29,15 +29,16 @@ body {
 }
 
 /* 右パネル */
-#rightPanel { 
-  flex:1; 
-  display:flex; 
-  flex-direction:column; 
-  border-left:1px solid #ccc; 
-  transition:flex 0.3s; 
-  min-width: 0;
+#rightPanel {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden; /* 子要素の表示崩れを防ぐ */
+  transition:flex 0.3s;
 }
 #rightPanel.collapsed { flex:0; }
+#tableWrapper { flex:1; overflow:auto; transition: flex 0.3s; }
+
 
 #panelHeader { 
   background:#eee; 
@@ -430,9 +431,9 @@ const toggleArrow = document.getElementById("toggleArrow");
 
 toggleArrow.addEventListener("click", ()=>{
   rightPanel.classList.toggle("collapsed");
-  tableWrapper.classList.toggle("collapsed");
+  // tableWrapper は flex の中で自動的に 0 になるので display:none は不要
   toggleArrow.innerHTML = rightPanel.classList.contains("collapsed") ? "&#9654;" : "&#9664;";
-});
+});;
 rightPanel.addEventListener("transitionend", ()=>{ map.invalidateSize(); });
 
 document.getElementById("searchInput").addEventListener("input", function() {
