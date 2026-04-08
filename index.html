@@ -145,6 +145,7 @@ tbody tr:hover {
 }
 
 /* スマホ対応 */
+
 @media (max-width: 800px) {
   #map { flex:3; }
 
@@ -153,8 +154,7 @@ tbody tr:hover {
     min-width: 0;
   }
 
- button, select, input { font-size:14px !important; }
-}
+  button, select, input { font-size:14px !important; }
 
   #dataTable { 
     font-size:14px;
@@ -162,11 +162,11 @@ tbody tr:hover {
     min-width: 100%;
   }
 
-  #controlsHeader {
+  #controlsHeader{
     padding: 4px 6px !important;
     font-size: 16px !important;  
   }
-}
+} /* ←この閉じ括弧が必須 */
 </style>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -488,7 +488,14 @@ legend.style.display = controls.classList.contains("collapsed") ? "block" : "non
 function toggleControls() {
   controls.classList.toggle("collapsed");
   controlsToggle.innerHTML = controls.classList.contains("collapsed") ? "&#9654;" : "&#9660;";
-  legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
+
+  // 凡例表示の制御
+  if(window.innerWidth <= 800){ // スマホ
+    legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
+  } else {
+    legend.style.display = controls.classList.contains("collapsed") ? "block" : "none";
+  }
+
   controls.style.zIndex = 1000;
   setTimeout(() => map.invalidateSize(), 310);
 }
