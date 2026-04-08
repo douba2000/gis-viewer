@@ -12,8 +12,8 @@ body {
   height:100vh; 
   font-family:sans-serif; 
   padding-top: env(safe-area-inset-top);
-  padding-left: 10px;   /* 左余白 */
-  padding-right: 10px;  /* 右余白 */
+  padding-left: 20px;   /* 左余白 */
+  padding-right: 20px;  /* 右余白 */
   padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -158,8 +158,8 @@ tbody tr:hover {
 /* スマホ対応 */
 @media (max-width: 800px) {
   body {
-    padding-left: calc(10px + env(safe-area-inset-left, 0px));
-    padding-right: calc(10px + env(safe-area-inset-right, 0px));
+    padding-left: calc(20px + env(safe-area-inset-left, 0px));
+    padding-right: calc(20px + env(safe-area-inset-right, 0px));
   }
 
   #map { flex:3; }
