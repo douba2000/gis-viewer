@@ -76,6 +76,16 @@ button, select, input {
 #controlsHeader { margin-bottom:5px; }
 #controls.collapsed > *:not(#controlsHeader) { display:none; }
 
+#controlsHeader {
+  display: flex;
+  justify-content: flex-end; /* 右寄せ */
+  align-items: center;        /* 上下中央 */
+  padding: 6px 10px;          /* 押しやすく */
+  background: rgba(240,240,240,0.9);
+  border-radius: 6px;
+  user-select: none;
+}
+
 /* ⭐ここが重要（修正済み） */
 #dataTable {
   border-collapse: collapse;
