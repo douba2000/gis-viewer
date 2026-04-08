@@ -90,6 +90,9 @@ button, select, input {
 }
 #controlsBody { display: flex; flex-direction: column; }
 #controls.collapsed #controlsBody { display: none; }
+#controls {
+  z-index: 1000;          /* 常に凡例より前面 */
+}
 
 /* ⭐ここが重要（修正済み） */
 #dataTable {
@@ -134,14 +137,17 @@ tbody tr:hover {
 
 /* 凡例 */
 #legend { 
-  position:absolute; 
+  position: absolute;
   bottom: calc(5px + env(safe-area-inset-bottom));
   left: calc(5px + env(safe-area-inset-left));
-  background:white; 
-  padding:5px; 
-  border:1px solid #999; 
-  font-size:14px; 
-  z-index:1000; 
+  width: 200px;        /* 横幅を固定 */
+  max-height: 50%;      /* 高さが長くなったらスクロール */
+  overflow-y: auto;     /* 縦スクロール */
+  background: white;
+  padding: 5px;
+  border: 1px solid #999;
+  font-size: 14px;
+  z-index: 999;         /* パネルの下 */
 }
 
 /* スマホ対応 */
