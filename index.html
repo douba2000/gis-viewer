@@ -311,25 +311,29 @@ function recolorPolygonsByColumn(columnKey){
     });
     polygonMap.forEach(({poly,row})=>{
   const val = row.querySelector(".landUseCell")?.innerText || "";
-  const c = colorMap[val] || 'gray';   // 塗りつぶし色
+  const c = colorMap[val] || 'gray';
   poly.originalColor = c;
   poly.setStyle({
-    fillColor: c,   // 塗りつぶしは列色
-    color: 'gray',  // 縁は常にグレー
+    fillColor: c,
+    color: 'gray',   // ← ここを必ず 'gray' に固定
     weight: 2,
     fillOpacity: 1
   });
 });
-
   } else if(columnKey==="rowMaxColumn"){
     polygonMap.forEach(({poly,row})=>{
-      const nums = Array.from(row.children).slice(1, DATA_COLUMNS).map(td=>parseFloat(td.innerText)||0);
-      const maxVal = Math.max(...nums);
-      const maxIdx = nums.indexOf(maxVal);
-      const color = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
-      poly.originalColor=color;
-      poly.setStyle({fillColor:color,color:color,weight:2, fillOpacity:1});
-    });
+  const nums = Array.from(row.children).slice(1, DATA_COLUMNS).map(td=>parseFloat(td.innerText)||0);
+  const maxVal = Math.max(...nums);
+  const maxIdx = nums.indexOf(maxVal);
+  const color = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
+  poly.originalColor = color;
+  poly.setStyle({
+    fillColor: color,
+    color: 'gray',   // ← ここを必ず 'gray'
+    weight: 2,
+    fillOpacity: 1
+  });
+});
 
     const headerRow = document.getElementById("headerRow");
     Array.from(headerRow.children).slice(1, DATA_COLUMNS).forEach((th,i)=>{
@@ -346,13 +350,24 @@ function recolorPolygonsByColumn(columnKey){
     if(isNaN(minVal)) minVal=0; if(isNaN(maxVal)) maxVal=100; if(isNaN(steps)||steps<1) steps=10;
 
     polygonMap.forEach(({poly,row})=>{
-      let val=parseFloat(row.children[columnKey]?.innerText);
-      if(isNaN(val)||val<=0){ poly.setStyle({fillColor:null,color:'gray', fillOpacity:1}); return; }
-      let normalized=(val-minVal)/(maxVal-minVal); if(normalized<0) normalized=0; if(normalized>1) normalized=1;
-      let idx=Math.floor(normalized*steps); if(idx>=colors10.length) idx=colors10.length-1;
-      poly.originalColor=colors10[idx];
-      poly.setStyle({fillColor:colors10[idx], color:colors10[idx], weight:2, fillOpacity:1});
-    });
+  let val=parseFloat(row.children[columnKey]?.innerText);
+  if(isNaN(val)||val<=0){ 
+    poly.setStyle({fillColor:null,color:'gray',fillOpacity:1}); 
+    return; 
+  }
+  let normalized=(val-minVal)/(maxVal-minVal);
+  if(normalized<0) normalized=0;
+  if(normalized>1) normalized=1;
+  let idx=Math.floor(normalized*steps);
+  if(idx>=colors10.length) idx=colors10.length-1;
+  poly.originalColor=colors10[idx];
+  poly.setStyle({
+    fillColor: colors10[idx],
+    color: 'gray',   // ← ここも固定
+    weight: 2,
+    fillOpacity: 1
+  });
+});
 
     for(let i=0;i<steps;i++){
       let start=(minVal+i*(maxVal-minVal)/steps).toFixed(0);
