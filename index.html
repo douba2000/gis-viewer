@@ -338,7 +338,7 @@ function recolorPolygonsByColumn(columnKey){
     fillColor: c,
     color: 'gray',   // ← ここを必ず 'gray' に固定
     weight: 2,
-    fillOpacity: 1
+    fillOpacity: (c === 'gray') ? 0.2 : 0.7
   });
 });
   } else if(columnKey==="rowMaxColumn"){
@@ -373,9 +373,13 @@ function recolorPolygonsByColumn(columnKey){
     polygonMap.forEach(({poly,row})=>{
   let val=parseFloat(row.children[columnKey]?.innerText);
   if(isNaN(val)||val<=0){ 
-    poly.setStyle({fillColor:null,color:'gray',fillOpacity:1}); 
-    return; 
-  }
+  poly.setStyle({
+    fillColor: null,
+    color: 'gray',
+    fillOpacity: 0.2   // ←透過にする
+  }); 
+  return; 
+}
   let normalized=(val-minVal)/(maxVal-minVal);
   if(normalized<0) normalized=0;
   if(normalized>1) normalized=1;
@@ -447,7 +451,7 @@ function importCSV(){
               decoded.forEach(latlngs=>{
                 if(!latlngs||latlngs.length===0) return;
 
-                const poly=L.polygon(latlngs,{color:'gray',weight:2,fillOpacity:1}).addTo(map);
+                const poly=L.polygon(latlngs,{color:'gray',weight:2,fillOpacity:0.3}).addTo(map);
                 poly.originalColor='gray';
                 polygonMap.push({poly,row:tr});
                 tr.polygons.push(poly);
