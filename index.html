@@ -244,8 +244,30 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 }).addTo(map);
 
 let polygonMap=[], selectedRow=null, selectedPolygons=[], DATA_COLUMNS=15;
-const colors10=['#0000ff','#0040ff','#0080ff','#00bfff','#00ffbf','#00ff00','#ffff00','#ffbf00','#ff8000','#ff0000'];
-const maxColumnColors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
+const colors10 = [
+  '#e3f2fd', // 薄い青
+  '#bbdefb',
+  '#90caf9',
+  '#64b5f6',
+  '#4fc3f7',
+  '#4dd0e1',
+  '#81c784',
+  '#aed581',
+  '#fff176',
+  '#ffb74d'
+];
+const maxColumnColors = [
+  '#a6cee3', // 水色
+  '#fdbf6f', // オレンジ
+  '#b2df8a', // 緑
+  '#fb9a99', // 赤
+  '#cab2d6', // 紫
+  '#ffffb3', // 黄
+  '#8dd3c7', // 青緑
+  '#fccde5', // ピンク
+  '#d9d9d9', // グレー
+  '#bc80bd'  // 薄紫
+];
 
 function addRow(rowData){
   const tbody=document.getElementById("tableBody");
