@@ -296,13 +296,31 @@ function selectRow(tr){
 function recolorPolygonsByColumn(columnKey){
   const legendDiv=document.getElementById("legend"); legendDiv.innerHTML="";
 
-  if(columnKey==="landUseCell"){
-    const vals=polygonMap.map(({row})=>row.querySelector(".landUseCell")?.innerText||"").filter(v=>v);
-    const uniqueVals=[...new Set(vals)]; 
-    const colorMap={};
-    uniqueVals.forEach(v=>{
-      colorMap[v]='#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+ if(columnKey === "landUseCell"){
+  const legendDiv = document.getElementById("legend");
+  legendDiv.innerHTML = "";
+  const colorMap = {};  // 作目ごとの色
+
+  polygonMap.forEach(({poly,row})=>{
+    const val = row.querySelector(".landUseCell")?.innerText || "";
+    const c = getLandUseColor(val, colorMap);  // 順番固定カラーを取得
+    poly.originalColor = c;
+    poly.setStyle({
+      fillColor: c,
+      color: '#ccc',  // 未選択ポリゴンの境界色
+      weight: 2,
+      fillOpacity: 1
     });
+  });
+
+  // 凡例表示
+  Object.keys(colorMap).forEach(v=>{
+    const color = colorMap[v];
+    const item = document.createElement("div");
+    item.innerHTML = `<span style="display:inline-block;width:20px;height:20px;background:${color};margin-right:5px;border:1px solid #000;"></span>${v}`;
+    legendDiv.appendChild(item);
+  });
+}
     uniqueVals.forEach(v=>{
       const color=colorMap[v];
       const item=document.createElement("div");
