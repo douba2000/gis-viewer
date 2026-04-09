@@ -310,11 +310,16 @@ function recolorPolygonsByColumn(columnKey){
       legendDiv.appendChild(item);
     });
     polygonMap.forEach(({poly,row})=>{
-      const val=row.querySelector(".landUseCell")?.innerText||"";
-      const c=colorMap[val]||'gray';
-      poly.originalColor=c;
-      poly.setStyle({fillColor:c,color:c,weight:2, fillOpacity:1});
-    });
+  const val = row.querySelector(".landUseCell")?.innerText || "";
+  const c = colorMap[val] || 'gray';   // 塗りつぶし色
+  poly.originalColor = c;
+  poly.setStyle({
+    fillColor: c,   // 塗りつぶしは列色
+    color: 'gray',  // 縁は常にグレー
+    weight: 2,
+    fillOpacity: 1
+  });
+});
 
   } else if(columnKey==="rowMaxColumn"){
     polygonMap.forEach(({poly,row})=>{
