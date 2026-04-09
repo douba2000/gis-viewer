@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>簡易GIS - Viewer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>簡易GIS - Viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
  
 <style>
@@ -149,6 +151,7 @@ tbody tr:hover {
 /* 凡例 */
 #legend {
   position: absolute;
+  top: calc(24px + 10px + env(safe-area-inset-top));
   left: calc(5px + env(safe-area-inset-left));
   width: 150px;
   max-height: calc(100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
@@ -244,30 +247,8 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 }).addTo(map);
 
 let polygonMap=[], selectedRow=null, selectedPolygons=[], DATA_COLUMNS=15;
-const colors10 = [
-  '#e3f2fd', // 薄い青
-  '#bbdefb',
-  '#90caf9',
-  '#64b5f6',
-  '#4fc3f7',
-  '#4dd0e1',
-  '#81c784',
-  '#aed581',
-  '#fff176',
-  '#ffb74d'
-];
-const maxColumnColors = [
-  '#a6cee3', // 水色
-  '#fdbf6f', // オレンジ
-  '#b2df8a', // 緑
-  '#fb9a99', // 赤
-  '#cab2d6', // 紫
-  '#ffffb3', // 黄
-  '#8dd3c7', // 青緑
-  '#fccde5', // ピンク
-  '#d9d9d9', // グレー
-  '#bc80bd'  // 薄紫
-];
+const colors10=['#0000ff','#0040ff','#0080ff','#00bfff','#00ffbf','#00ff00','#ffff00','#ffbf00','#ff8000','#ff0000'];
+const maxColumnColors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
 
 function addRow(rowData){
   const tbody=document.getElementById("tableBody");
@@ -292,24 +273,15 @@ function selectRow(tr){
   if(selectedRow){
     selectedRow.style.backgroundColor="";
     selectedPolygons.forEach(poly=>{
-     poly.setStyle({
-  color: 'gray',
-  weight: 2
-  // 塗りはそのまま維持
-});
+      poly.setStyle({color:poly.originalColor, fillColor:poly.originalColor, weight:2, fillOpacity:1});
+    });
   }
   selectedRow=tr;
   tr.style.backgroundColor="#ffd";
   selectedPolygons=tr.polygons||[];
   selectedPolygons.forEach(poly=>{
-
- selectedPolygons.forEach(poly=>{
-  poly.setStyle({
-    color: 'yellow',
-    weight: 4
-    // 塗りは触らない！！
+    poly.setStyle({color:'yellow', weight:4, fillColor:poly.originalColor, fillOpacity:1});
   });
-});
 
   if(selectedPolygons.length>0){
     let latSum=0,lngSum=0,count=0;
@@ -343,11 +315,12 @@ function recolorPolygonsByColumn(columnKey){
   const val = row.querySelector(".landUseCell")?.innerText || "";
   const c = colorMap[val] || 'gray';
   poly.originalColor = c;
-poly.setStyle({
-  fillColor: 'gray',   // ←これが重要
-  color: 'gray',
-  fillOpacity: 0.2
-});
+  poly.setStyle({
+    fillColor: c,
+    color: 'gray',   // ← ここを必ず 'gray' に固定
+    weight: 2,
+    fillOpacity: 1
+  });
 });
   } else if(columnKey==="rowMaxColumn"){
     polygonMap.forEach(({poly,row})=>{
@@ -381,13 +354,9 @@ poly.setStyle({
     polygonMap.forEach(({poly,row})=>{
   let val=parseFloat(row.children[columnKey]?.innerText);
   if(isNaN(val)||val<=0){ 
-  poly.setStyle({
-    fillColor: null,
-    color: 'gray',
-    fillOpacity: 0.2   // ←透過にする
-  }); 
-  return; 
-}
+    poly.setStyle({fillColor:null,color:'gray',fillOpacity:1}); 
+    return; 
+  }
   let normalized=(val-minVal)/(maxVal-minVal);
   if(normalized<0) normalized=0;
   if(normalized>1) normalized=1;
@@ -459,7 +428,7 @@ function importCSV(){
               decoded.forEach(latlngs=>{
                 if(!latlngs||latlngs.length===0) return;
 
-                const poly=L.polygon(latlngs,{color:'gray',weight:2,fillOpacity:0.3}).addTo(map);
+                const poly=L.polygon(latlngs,{color:'gray',weight:2,fillOpacity:1}).addTo(map);
                 poly.originalColor='gray';
                 polygonMap.push({poly,row:tr});
                 tr.polygons.push(poly);
@@ -495,8 +464,6 @@ const toggleArrow = document.getElementById("toggleArrow");
 toggleArrow.addEventListener("click", ()=>{
   rightPanel.classList.toggle("collapsed");
   toggleArrow.innerHTML = rightPanel.classList.contains("collapsed") ? "&#9654;" : "&#9664;";
-});
-rightPanel.addEventListener("transitionend", ()=>{
   map.invalidateSize();
 });
 rightPanel.addEventListener("transitionend", ()=>{ map.invalidateSize(); });
