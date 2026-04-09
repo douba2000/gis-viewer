@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>簡易GIS - Viewer</title>
+    <title>簡易GIS - Viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
  
 <style>
@@ -151,7 +149,6 @@ tbody tr:hover {
 /* 凡例 */
 #legend {
   position: absolute;
-  top: calc(24px + 10px + env(safe-area-inset-top));
   left: calc(5px + env(safe-area-inset-left));
   width: 150px;
   max-height: calc(100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
@@ -464,6 +461,8 @@ const toggleArrow = document.getElementById("toggleArrow");
 toggleArrow.addEventListener("click", ()=>{
   rightPanel.classList.toggle("collapsed");
   toggleArrow.innerHTML = rightPanel.classList.contains("collapsed") ? "&#9654;" : "&#9664;";
+});
+rightPanel.addEventListener("transitionend", ()=>{
   map.invalidateSize();
 });
 rightPanel.addEventListener("transitionend", ()=>{ map.invalidateSize(); });
