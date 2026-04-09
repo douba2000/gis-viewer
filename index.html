@@ -250,6 +250,20 @@ let polygonMap=[], selectedRow=null, selectedPolygons=[], DATA_COLUMNS=15;
 const colors10=['#0000ff','#0040ff','#0080ff','#00bfff','#00ffbf','#00ff00','#ffff00','#ffbf00','#ff8000','#ff0000'];
 const maxColumnColors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
 
+function brightenColor(hex, percent=40){
+  let num = parseInt(hex.replace("#",""),16);
+  let r = (num >> 16) + Math.round(255 * percent / 100);
+  let g = ((num >> 8) & 0x00FF) + Math.round(255 * percent / 100);
+  let b = (num & 0x0000FF) + Math.round(255 * percent / 100);
+
+  r = Math.min(255, r);
+  g = Math.min(255, g);
+  b = Math.min(255, b);
+
+  return "#" + (r<<16 | g<<8 | b).toString(16).padStart(6,'0');
+}
+
+
 function addRow(rowData){
   const tbody=document.getElementById("tableBody");
   const tr=document.createElement("tr");
@@ -273,15 +287,51 @@ function selectRow(tr){
   if(selectedRow){
     selectedRow.style.backgroundColor="";
     selectedPolygons.forEach(poly=>{
-      poly.setStyle({color:poly.originalColor, fillColor:poly.originalColor, weight:2, fillOpacity:1});
+
+  if(!poly.originalColor){
+    // ★値なしポリゴンは元の半透明グレーに戻す
+    poly.setStyle({
+      fillColor: '#999',
+      color: '#666',
+      weight: 2,
+      fillOpacity: 0.4
     });
+
+  } else {
+    // ★値ありは元の色に戻す
+    poly.setStyle({
+      fillColor: poly.originalColor,
+      color: 'gray',
+      weight: 2,
+      fillOpacity: 1
+    });
+  }
+
+});
   }
   selectedRow=tr;
   tr.style.backgroundColor="#ffd";
   selectedPolygons=tr.polygons||[];
-  selectedPolygons.forEach(poly=>{
-    poly.setStyle({color:'yellow', weight:4, fillColor:poly.originalColor, fillOpacity:1});
-  });
+ selectedPolygons.forEach(poly=>{
+
+  if(!poly.originalColor){
+    // 値なし → 見た目を変えない（超重要）
+    poly.setStyle({
+      color: 'yellow',
+      weight: 4,
+      // fillはいじらない
+    });
+  } else {
+    // 値あり → 普通に色維持
+    poly.setStyle({
+      color: 'yellow',
+      weight: 4,
+      fillColor: poly.originalColor,
+      fillOpacity: 1
+    });
+  }
+
+});
 
   if(selectedPolygons.length>0){
     let latSum=0,lngSum=0,count=0;
@@ -303,7 +353,8 @@ function recolorPolygonsByColumn(columnKey){
     const uniqueVals=[...new Set(vals)]; 
     const colorMap={};
     uniqueVals.forEach(v=>{
-      colorMap[v]='#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+      const randomColor = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+colorMap[v] = brightenColor(randomColor, 40);
     });
     uniqueVals.forEach(v=>{
       const color=colorMap[v];
@@ -327,7 +378,8 @@ function recolorPolygonsByColumn(columnKey){
   const nums = Array.from(row.children).slice(1, DATA_COLUMNS).map(td=>parseFloat(td.innerText)||0);
   const maxVal = Math.max(...nums);
   const maxIdx = nums.indexOf(maxVal);
-  const color = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
+  const base = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
+const color = brightenColor(base, 40);
   poly.originalColor = color;
   poly.setStyle({
     fillColor: color,
@@ -339,9 +391,10 @@ function recolorPolygonsByColumn(columnKey){
 
     const headerRow = document.getElementById("headerRow");
     Array.from(headerRow.children).slice(1, DATA_COLUMNS).forEach((th,i)=>{
-      const color = maxColumnColors[i % maxColumnColors.length];
+      const color = brightenColor(maxColumnColors[i % maxColumnColors.length], 40);
       const item=document.createElement("div");
-      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;background:${color};margin-right:5px;border:1px solid #000;"></span>${th.innerText}`;
+      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;
+background:${color};margin-right:5px;border:1px solid #000;"></span>${th.innerText}`;
       legendDiv.appendChild(item);
     });
 
@@ -354,17 +407,23 @@ function recolorPolygonsByColumn(columnKey){
     polygonMap.forEach(({poly,row})=>{
   let val=parseFloat(row.children[columnKey]?.innerText);
   if(isNaN(val)||val<=0){ 
-    poly.setStyle({fillColor:null,color:'gray',fillOpacity:1}); 
-    return; 
-  }
+  poly.originalColor = null;  // ←これが超重要
+  poly.setStyle({
+    fillColor: '#999',
+    color: '#666',
+    fillOpacity: 0.4
+  }); 
+  return; 
+}
   let normalized=(val-minVal)/(maxVal-minVal);
   if(normalized<0) normalized=0;
   if(normalized>1) normalized=1;
   let idx=Math.floor(normalized*steps);
   if(idx>=colors10.length) idx=colors10.length-1;
-  poly.originalColor=colors10[idx];
-  poly.setStyle({
-    fillColor: colors10[idx],
+  const bright = brightenColor(colors10[idx], 40);
+poly.originalColor = bright;
+poly.setStyle({
+  fillColor: bright,
     color: 'gray',   // ← ここも固定
     weight: 2,
     fillOpacity: 1
@@ -375,7 +434,7 @@ function recolorPolygonsByColumn(columnKey){
       let start=(minVal+i*(maxVal-minVal)/steps).toFixed(0);
       let end=(minVal+(i+1)*(maxVal-minVal)/steps).toFixed(0);
       const item=document.createElement("div");
-      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;background:${colors10[i]||colors10[colors10.length-1]};margin-right:5px;border:1px solid #000;"></span>${start} ～ ${end}`;
+      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;background:${brightenColor(colors10[i]||colors10[colors10.length-1], 40)};margin-right:5px;border:1px solid #000;"></span>${start} ～ ${end}`;
       legendDiv.appendChild(item);
     }
   }
@@ -519,6 +578,9 @@ const legend = document.getElementById("legend");
 legend.addEventListener("touchstart", e => e.stopPropagation());
 legend.addEventListener("touchmove", e => e.stopPropagation());
 legend.addEventListener("wheel", e => e.stopPropagation());
+
+
+
 </script>
 
 </body>
