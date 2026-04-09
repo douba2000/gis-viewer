@@ -290,20 +290,21 @@ function addRow(rowData){
 
 function selectRow(tr){
   if(selectedRow){
-    selectedRow.style.backgroundColor="";
-    selectedPolygons.forEach(poly=>{
-     poly.setStyle({
-  color: 'gray',
-  weight: 2
-  // 塗りはそのまま維持
-});
-  }
-  selectedRow=tr;
+  selectedRow.style.backgroundColor="";
+  selectedPolygons.forEach(poly=>{
+    poly.setStyle({
+      color: 'gray',
+      weight: 2,
+      fillColor: poly.originalColor || 'gray'
+    });
+  });
+}
+
+selectedRow = tr;
   tr.style.backgroundColor="#ffd";
   selectedPolygons=tr.polygons||[];
-  selectedPolygons.forEach(poly=>{
 
- selectedPolygons.forEach(poly=>{
+      selectedPolygons.forEach(poly=>{
   poly.setStyle({
     color: 'yellow',
     weight: 4
@@ -343,10 +344,11 @@ function recolorPolygonsByColumn(columnKey){
   const val = row.querySelector(".landUseCell")?.innerText || "";
   const c = colorMap[val] || 'gray';
   poly.originalColor = c;
+poly.originalColor = c;
 poly.setStyle({
-  fillColor: 'gray',   // ←これが重要
+  fillColor: c,
   color: 'gray',
-  fillOpacity: 0.2
+  fillOpacity: 1
 });
 });
   } else if(columnKey==="rowMaxColumn"){
@@ -384,7 +386,8 @@ poly.setStyle({
   poly.setStyle({
     fillColor: null,
     color: 'gray',
-    fillOpacity: 0.2   // ←透過にする
+    fillOpacity: 0.4
+    // ←透過にする
   }); 
   return; 
 }
@@ -496,9 +499,7 @@ toggleArrow.addEventListener("click", ()=>{
   rightPanel.classList.toggle("collapsed");
   toggleArrow.innerHTML = rightPanel.classList.contains("collapsed") ? "&#9654;" : "&#9664;";
 });
-rightPanel.addEventListener("transitionend", ()=>{
-  map.invalidateSize();
-});
+
 rightPanel.addEventListener("transitionend", ()=>{ map.invalidateSize(); });
 
 document.getElementById("searchInput").addEventListener("input", function() {
