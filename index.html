@@ -86,7 +86,7 @@ button, select, input {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 4px 4px;
+  padding: 0px 4px;
   background: rgba(240,240,240,0.9);
   border-radius: 6px;
   user-select: none;
@@ -155,13 +155,13 @@ tbody tr:hover {
   position: fixed;  /* ←ここ変更が本命 */
   top: calc(24px + 10px + env(safe-area-inset-top));
   left: 0;          /* ←画面の左端に固定 */
-  width: 150px;
+  width: 130px;
   max-height: calc(100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow-y: auto;
   border: 1px solid #999;
   background: white;
-  padding: 5px;
-  font-size: 14px;
+  padding: 2px;
+  font-size: 12px;
   display: none;
   z-index: 999;
 }
