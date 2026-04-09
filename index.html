@@ -150,9 +150,9 @@ tbody tr:hover {
 
 /* 凡例 */
 #legend {
-  position: absolute;
+  position: fixed;  /* ←ここ変更が本命 */
   top: calc(24px + 10px + env(safe-area-inset-top));
-  left: calc(5px + env(safe-area-inset-left));
+  left: 0;          /* ←画面の左端に固定 */
   width: 150px;
   max-height: calc(100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow-y: auto;
@@ -162,6 +162,7 @@ tbody tr:hover {
   font-size: 14px;
   display: none;
   z-index: 999;
+}
 
   /* 追加 */
   touch-action: pan-y;             /* 縦スクロールだけ許可 */
