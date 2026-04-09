@@ -511,6 +511,12 @@ searchInput.addEventListener("blur", () => {
     window.scrollTo(0,0);  // 画面を上に戻す
   }, 300);  // キーボードが閉じるのを少し待つ
 });
+
+
+const legend = document.getElementById("legend");
+legend.addEventListener("touchstart", e => e.stopPropagation());
+legend.addEventListener("touchmove", e => e.stopPropagation());
+legend.addEventListener("wheel", e => e.stopPropagation());
 </script>
 
 </body>
