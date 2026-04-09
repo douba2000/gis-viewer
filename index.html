@@ -315,8 +315,7 @@ function recolorPolygonsByColumn(columnKey){
   poly.originalColor = c;
   poly.setStyle({
     fillColor: c,
-    color: 'gray',   // ← ここを必ず 'gray' に固定
-    weight: 2,
+    color: '#ccc',   
     fillOpacity: 1
   });
 });
@@ -329,7 +328,7 @@ function recolorPolygonsByColumn(columnKey){
   poly.originalColor = color;
   poly.setStyle({
     fillColor: color,
-    color: 'gray',   // ← ここを必ず 'gray'
+    color: '#ccc',   // ← ここを必ず 'gray'
     weight: 2,
     fillOpacity: 1
   });
@@ -352,7 +351,7 @@ function recolorPolygonsByColumn(columnKey){
     polygonMap.forEach(({poly,row})=>{
   let val=parseFloat(row.children[columnKey]?.innerText);
   if(isNaN(val)||val<=0){ 
-    poly.setStyle({fillColor:null,color:'gray',fillOpacity:1}); 
+    poly.setStyle({fillColor:null,color:'#ccc',fillOpacity:1}); 
     return; 
   }
   let normalized=(val-minVal)/(maxVal-minVal);
@@ -363,7 +362,7 @@ function recolorPolygonsByColumn(columnKey){
   poly.originalColor=colors10[idx];
   poly.setStyle({
     fillColor: colors10[idx],
-    color: 'gray',   // ← ここも固定
+    color: '#ccc',   // ← ここも固定
     weight: 2,
     fillOpacity: 1
   });
