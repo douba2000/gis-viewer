@@ -292,15 +292,24 @@ function selectRow(tr){
   if(selectedRow){
     selectedRow.style.backgroundColor="";
     selectedPolygons.forEach(poly=>{
-      poly.setStyle({color:poly.originalColor, fillColor:poly.originalColor, weight:2, fillOpacity:1});
-    });
+     poly.setStyle({
+  color: 'gray',
+  weight: 2
+  // 塗りはそのまま維持
+});
   }
   selectedRow=tr;
   tr.style.backgroundColor="#ffd";
   selectedPolygons=tr.polygons||[];
   selectedPolygons.forEach(poly=>{
-    poly.setStyle({color:'yellow', weight:4, fillColor:poly.originalColor, fillOpacity:1});
+
+ selectedPolygons.forEach(poly=>{
+  poly.setStyle({
+    color: 'yellow',
+    weight: 4
+    // 塗りは触らない！！
   });
+});
 
   if(selectedPolygons.length>0){
     let latSum=0,lngSum=0,count=0;
@@ -334,12 +343,11 @@ function recolorPolygonsByColumn(columnKey){
   const val = row.querySelector(".landUseCell")?.innerText || "";
   const c = colorMap[val] || 'gray';
   poly.originalColor = c;
-  poly.setStyle({
-    fillColor: c,
-    color: 'gray',   // ← ここを必ず 'gray' に固定
-    weight: 2,
-    fillOpacity: (c === 'gray') ? 0.2 : 0.7
-  });
+poly.setStyle({
+  fillColor: 'gray',   // ←これが重要
+  color: 'gray',
+  fillOpacity: 0.2
+});
 });
   } else if(columnKey==="rowMaxColumn"){
     polygonMap.forEach(({poly,row})=>{
