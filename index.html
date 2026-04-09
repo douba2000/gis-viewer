@@ -153,18 +153,20 @@ tbody tr:hover {
   position: absolute;
   top: calc(24px + 10px + env(safe-area-inset-top));
   left: calc(5px + env(safe-area-inset-left));
-  width:150px;
+  width: 150px;
   max-height: calc(100vh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow-y: auto;
-  border:1px solid #999;
-  background:white;
-  padding:5px;
-  font-size:14px;
-  display:none;
-  z-index:999;
+  border: 1px solid #999;
+  background: white;
+  padding: 5px;
+  font-size: 14px;
+  display: none;
+  z-index: 999;
 
   /* 追加 */
-  touch-action: pan-y;   /* 縦スクロールだけ許可 */
+  touch-action: pan-y;             /* 縦スクロールだけ許可 */
+  overscroll-behavior: contain;    /* スクロールバウンスを地図に伝えない */
+  -webkit-overflow-scrolling: touch; /* iOSで慣性スクロール対応 */
 }
 
 /* スマホ対応 */
