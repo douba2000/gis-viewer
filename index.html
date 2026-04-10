@@ -251,7 +251,11 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 
 let polygonMap=[], selectedRow=null, selectedPolygons=[], DATA_COLUMNS=15;
 const colors10=['#0000ff','#0040ff','#0080ff','#00bfff','#00ffbf','#00ff00','#ffff00','#ffbf00','#ff8000','#ff0000'];
-const maxColumnColors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
+const maxColumnColors = [
+ '#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd',
+ '#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf',
+ '#393b79','#637939','#8c6d31','#843c39','#7b4173'
+];
 
 function brightenColor(hex, percent=40){
   let num = parseInt(hex.replace("#",""),16);
