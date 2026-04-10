@@ -586,6 +586,53 @@ legend.addEventListener("touchstart", e => e.stopPropagation());
 legend.addEventListener("touchmove", e => e.stopPropagation());
 legend.addEventListener("wheel", e => e.stopPropagation());
 
+function showOnlyNameAndSelected(selectedIndex){
+  const rows = document.querySelectorAll("#dataTable tr");
+
+  rows.forEach((row, rIdx)=>{
+    const cells = Array.from(row.children);
+
+    const newRow = document.createElement("tr");
+
+    // ヘッダー行
+    if(rIdx === 0){
+      const th1 = document.createElement("th");
+      th1.innerText = "名前";
+
+      const th2 = document.createElement("th");
+      th2.innerText = cells[selectedIndex]?.innerText || "選択列";
+
+      newRow.appendChild(th1);
+      newRow.appendChild(th2);
+
+    } else {
+      const td1 = document.createElement("td");
+      td1.innerText = cells[0]?.innerText || "";
+
+      const td2 = document.createElement("td");
+      td2.innerText = cells[selectedIndex]?.innerText || "";
+
+      newRow.appendChild(td1);
+      newRow.appendChild(td2);
+    }
+
+    row.replaceWith(newRow);
+  });
+}
+
+  document.getElementById("colorColumnSelect").addEventListener("change", e=>{
+  const val = e.target.value;
+
+  recolorPolygonsByColumn(val);
+
+  if(val === "landUseCell"){
+    location.reload(); // 一番安全に元に戻す
+  } else {
+    showOnlyNameAndSelected(parseInt(val));
+  }
+});
+  
+
 
 
 </script>
