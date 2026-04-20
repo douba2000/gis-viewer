@@ -142,6 +142,13 @@ th, td {
 
 th { background:#eee; }
 
+#dataTable thead th {
+  position: sticky;
+  top: 0;
+  background: #eee;
+  z-index: 2;
+}
+
 tbody tr:hover { 
   background:#f0f0f0; 
   cursor:pointer; 
@@ -378,9 +385,28 @@ colorMap[v] = brightenColor(randomColor, 40);
 });
   } else if(columnKey==="rowMaxColumn"){
     polygonMap.forEach(({poly,row})=>{
-  const nums = Array.from(row.children).slice(1, DATA_COLUMNS).map(td=>parseFloat(td.innerText)||0);
-  const maxVal = Math.max(...nums);
-  const maxIdx = nums.indexOf(maxVal);
+ const nums = Array.from(row.children)
+  .slice(1, DATA_COLUMNS)
+  .map(td=>{
+    const v = parseFloat(td.innerText);
+    return isNaN(v) ? null : v;
+  });
+
+const validNums = nums.filter(v => v !== null);
+
+if(validNums.length === 0){
+  poly.originalColor = null;
+  poly.setStyle({
+    fillColor: '#999',
+    color: '#666',
+    weight: 2,
+    fillOpacity: 0.4
+  });
+  return;
+}
+
+const maxVal = Math.max(...validNums);
+const maxIdx = nums.indexOf(maxVal);
   const base = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
 const color = brightenColor(base, 40);
   poly.originalColor = color;
