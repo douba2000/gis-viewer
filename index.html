@@ -140,6 +140,15 @@ th, td {
   word-break: keep-all; 
 }
 
+
+#dataTable th:first-child,
+#dataTable td:first-child {
+  width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 th { background:#eee; }
 
 #dataTable thead th {
@@ -196,6 +205,7 @@ tbody tr:hover {
     width: max-content;
     min-width: 100%;
   }
+
 
   #controlsHeader{
     padding: 4px 6px !important;
@@ -280,7 +290,8 @@ function addRow(rowData){
 
   rowData.forEach((v,i)=>{
     const td=document.createElement("td");
-    td.innerText=v||"";
+    td.innerText = v || "";
+td.title = v || "";
     if(i===0) td.className="nameCell";
     tr.appendChild(td);
   });
