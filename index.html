@@ -47,10 +47,7 @@ body {
   text-align:right; 
 }
 
-#dataTable td:nth-child(n+2),
-#dataTable th:nth-child(n+2) {
-  display: none;
-}
+
 
 /* 表ラッパー */
 #tableWrapper {
@@ -512,6 +509,7 @@ function importCSV(){
       }
 
       recolorPolygonsByColumn("landUseCell");
+showOnlyNameAndSelected("landUseCell");
     };
     reader.readAsText(file,'utf-8');
   });
@@ -520,7 +518,6 @@ function importCSV(){
 }
 
 document.getElementById("importCsvBtn").addEventListener("click",importCSV);
-document.getElementById("colorColumnSelect").addEventListener("change",e=>recolorPolygonsByColumn(e.target.value));
 document.getElementById("applyColorScale").addEventListener("click",()=>recolorPolygonsByColumn(document.getElementById("colorColumnSelect").value));
 
 const rightPanel = document.getElementById("rightPanel");
@@ -586,30 +583,57 @@ legend.addEventListener("touchstart", e => e.stopPropagation());
 legend.addEventListener("touchmove", e => e.stopPropagation());
 legend.addEventListener("wheel", e => e.stopPropagation());
 
+
 function showOnlyNameAndSelected(selectedIndex){
   const rows = document.querySelectorAll("#dataTable tr");
 
   rows.forEach(row => {
     Array.from(row.children).forEach((cell, i) => {
-      cell.style.display = (i === 0 || i === selectedIndex) ? "" : "none";
+
+      // 作目のとき
+      if(selectedIndex === "landUseCell"){
+        if(i === 0 || cell.className === "landUseCell"){
+          cell.style.display = "";
+        } else {
+          cell.style.display = "none";
+        }
+      }
+
+      // 通常の列（数字）
+      else{
+        if(i === 0 || i === selectedIndex){
+          cell.style.display = "";
+        } else {
+          cell.style.display = "none";
+        }
+      }
+
     });
   });
 }
 
-  document.getElementById("colorColumnSelect").addEventListener("change", e=>{
+document.getElementById("colorColumnSelect").addEventListener("change", e=>{
   const val = e.target.value;
 
   recolorPolygonsByColumn(val);
 
   if(val === "landUseCell"){
-    location.reload(); // 一番安全に元に戻す
+    showOnlyNameAndSelected("landUseCell");
+  } else if(val === "rowMaxColumn"){
+    showAllColumns();
   } else {
     showOnlyNameAndSelected(parseInt(val));
   }
 });
-  
+function showAllColumns(){
+  const rows = document.querySelectorAll("#dataTable tr");
 
-
+  rows.forEach(row => {
+    Array.from(row.children).forEach(cell => {
+      cell.style.display = "";
+    });
+  });
+}
 
 </script>
 
