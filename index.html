@@ -141,12 +141,12 @@ th, td {
 }
 
 
-#dataTable th:first-child,
-#dataTable td:first-child {
-  width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#dataTable td.nameCell,
+#dataTable th:first-child {
+  white-space: normal;      /* 折り返し許可 */
+  word-break: break-word;   /* 長い文字列も改行 */
+  overflow: visible;        /* はみ出し隠さない */
+  text-overflow: clip;      /* …を出さない */
 }
 
 th { background:#eee; }
@@ -354,6 +354,8 @@ function selectRow(tr){
 
 });
 
+
+
   if(selectedPolygons.length>0){
     let latSum=0,lngSum=0,count=0;
     selectedPolygons.forEach(poly=>{
@@ -365,6 +367,8 @@ function selectRow(tr){
     tr.scrollIntoView({behavior:"smooth", block:"center"});
   }
 }
+
+
 
 function recolorPolygonsByColumn(columnKey){
   const legendDiv=document.getElementById("legend"); legendDiv.innerHTML="";
