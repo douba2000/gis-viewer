@@ -202,9 +202,10 @@ tbody tr:hover {
 
   #dataTable { 
     font-size:14px;
-    width: max-content;
-    min-width: 100%;
+    width: 100%;        /* ← これに変更 */
+    table-layout: fixed;/* ← 追加（重要） */
   }
+
 
 
   #controlsHeader{
