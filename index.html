@@ -388,50 +388,49 @@ colorMap[v] = brightenColor(randomColor, 40);
       item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;background:${color};margin-right:5px;border:1px solid #000;"></span>${v}`;
       legendDiv.appendChild(item);
     });
-    polygonMap.forEach(({poly,row})=>{
-  const val = row.querySelector(".landUseCell")?.innerText || "";
-  const c = colorMap[val] || 'gray';
-  poly.originalColor = c;
-  poly.setStyle({
-    fillColor: c,
-    color: 'gray',   // ← ここを必ず 'gray' に固定
-    weight: 2,
-    fillOpacity: 1
-  });
-});
-  } else if(columnKey==="rowMaxColumn"){
-    polygonMap.forEach(({poly,row})=>{
- const nums = Array.from(row.children)
-  .slice(1, DATA_COLUMNS)
-  .map(td=>{
-    const v = parseFloat(td.innerText);
-    return isNaN(v) ? null : v;
-  });
+   const headerCells = Array.from(document.querySelectorAll("#headerRow th"));
 
-const validNums = nums.filter(v => v !== null);
+polygonMap.forEach(({poly,row})=>{
 
-if(validNums.length === 0){
-  poly.originalColor = null;
-  poly.setStyle({
-    fillColor: '#999',
-    color: '#666',
-    weight: 2,
-    fillOpacity: 0.4
-  });
-  return;
-}
+  const nums = Array.from(row.children)
+    .slice(1, DATA_COLUMNS)
+    .map(td=>{
+      const v = parseFloat(td.innerText);
+      return isNaN(v) ? null : v;
+    });
 
-const maxVal = Math.max(...validNums);
-const maxIdx = nums.indexOf(maxVal);
+  const validNums = nums.filter(v => v !== null);
+
+  if(validNums.length === 0){
+    poly.originalColor = null;
+    poly.setStyle({
+      fillColor: '#999',
+      color: '#666',
+      weight: 2,
+      fillOpacity: 0.4
+    });
+    return;
+  }
+
+  const maxVal = Math.max(...validNums);
+  const maxIdx = nums.indexOf(maxVal);
+
+  // ⭐ここが今回のキモ
+  const maxName = headerCells[maxIdx + 1]?.innerText || `項目${maxIdx+1}`;
+
   const base = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
-const color = brightenColor(base, 40);
+  const color = brightenColor(base, 40);
+
   poly.originalColor = color;
   poly.setStyle({
     fillColor: color,
-    color: 'gray',   // ← ここを必ず 'gray'
+    color: 'gray',
     weight: 2,
     fillOpacity: 1
   });
+
+  // ⭐表示を「列名＋値」にする
+  row.querySelector(".landUseCell").innerText = `${maxName}：${maxVal}`;
 });
 
     const headerRow = document.getElementById("headerRow");
@@ -660,9 +659,9 @@ document.getElementById("colorColumnSelect").addEventListener("change", e=>{
 
   if(val === "landUseCell"){
     showOnlyNameAndSelected("landUseCell");
-  } else if(val === "rowMaxColumn"){
-    showAllColumns();
-  } else {
+ } else if(val === "rowMaxColumn"){
+  showOnlyNameAndSelected("landUseCell");
+} else {
     showOnlyNameAndSelected(parseInt(val));
   }
 });
