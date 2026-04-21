@@ -227,6 +227,7 @@ tbody tr:hover {
     </div>
     <div id="controlsBody">
       <button id="importCsvBtn">CSV読み込み</button>
+<button id="locationBtn">現在地</button>
       <label>色分け列: <select id="colorColumnSelect"></select></label>
       <label>最小値: <input id="minValue" type="number" placeholder="自動"></label>
       <label>最大値: <input id="maxValue" type="number" placeholder="自動"></label>
@@ -255,8 +256,7 @@ tbody tr:hover {
 
 <script>
 let map = L.map('map', { 
-  zoomSnap:0.01, zoomDelta:0.01, wheelPxPerZoomLevel:200,
-  minZoom:5, maxZoom:20, zoomControl:false,
+  zoomSnap:0.01, zoomDelta:0.01, wheelPxPerZoomLevel:200, minZoom:5, maxZoom:20, zoomControl:false,
   tap: true, touchZoom: true, dragging: true
 }).setView([44.03,141.69],13);
 
@@ -264,6 +264,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
   attribution: 'Tiles &copy; Esri'
 }).addTo(map);
 
+let polygonMap=[], selectedRow=null, selectedPolygons=[], DATA_COLUMNS=15;
 // ===== 現在地表示 =====
 let currentLocationMarker = null;
 let currentLocationCircle = null;
@@ -277,27 +278,29 @@ function showCurrentLocation() {
 }
 
 map.on("locationfound", function(e) {
-  map.setView(e.latlng, map.getZoom(), { animate: false });
 
   if (currentLocationMarker) map.removeLayer(currentLocationMarker);
   if (currentLocationCircle) map.removeLayer(currentLocationCircle);
 
-  currentLocationMarker = L.marker(e.latlng).addTo(map);
+  // ピン
+  currentLocationMarker = L.marker(e.latlng)
+    .addTo(map)
+   
 
+  // ⭐ここが「青丸」
   currentLocationCircle = L.circle(e.latlng, {
-    radius: 10,
+    radius:5,   // ←ここを変えるとサイズ変わる
     color: '#3399ff',
     fillColor: '#3399ff',
     fillOpacity: 0.3
   }).addTo(map);
+
 });
 
 map.on("locationerror", function() {
   alert("現在地取れない");
 });
 
-// ⭐最後に呼ぶ！！
-showCurrentLocation();
 
 const colors10=['#0000ff','#0040ff','#0080ff','#00bfff','#00ffbf','#00ff00','#ffff00','#ffbf00','#ff8000','#ff0000'];
 const maxColumnColors = [
@@ -410,116 +413,175 @@ function recolorPolygonsByColumn(columnKey){
   const legendDiv=document.getElementById("legend"); legendDiv.innerHTML="";
 
   if(columnKey==="landUseCell"){
-    const vals=polygonMap.map(({row})=>row.querySelector(".landUseCell")?.innerText||"").filter(v=>v);
-    const uniqueVals=[...new Set(vals)]; 
-    const colorMap={};
-    uniqueVals.forEach(v=>{
-      const randomColor = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
-colorMap[v] = brightenColor(randomColor, 40);
-    });
-    uniqueVals.forEach(v=>{
-      const color=colorMap[v];
-      const item=document.createElement("div");
-      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;background:${color};margin-right:5px;border:1px solid #000;"></span>${v}`;
-      legendDiv.appendChild(item);
-    });
-    polygonMap.forEach(({poly,row})=>{
-  const val = row.querySelector(".landUseCell")?.innerText || "";
-  const c = colorMap[val] || 'gray';
-  poly.originalColor = c;
-  poly.setStyle({
-    fillColor: c,
-    color: 'gray',   // ← ここを必ず 'gray' に固定
-    weight: 2,
-    fillOpacity: 1
-  });
-});
-  } else if(columnKey==="rowMaxColumn"){
-    polygonMap.forEach(({poly,row})=>{
- const nums = Array.from(row.children)
-  .slice(1, DATA_COLUMNS)
-  .map(td=>{
-    const v = parseFloat(td.innerText);
-    return isNaN(v) ? null : v;
+
+  // ===== 作目（カテゴリ色分け） =====
+const vals = polygonMap
+  .map(({row})=>row.originalLandUse || "")
+  .filter(v=>v);
+
+  const uniqueVals=[...new Set(vals)];
+  const colorMap={};
+
+  uniqueVals.forEach(v=>{
+    const randomColor = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+    colorMap[v] = brightenColor(randomColor, 40);
   });
 
-const validNums = nums.filter(v => v !== null);
+  // ポリゴン色
+  polygonMap.forEach(({poly,row})=>{
+    const val = row.originalLandUse || "";
 
-if(validNums.length === 0){
-  poly.originalColor = null;
-  poly.setStyle({
-    fillColor: '#999',
-    color: '#666',
-    weight: 2,
-    fillOpacity: 0.4
-  });
-  return;
-}
-
-const maxVal = Math.max(...validNums);
-const maxIdx = nums.indexOf(maxVal);
-  const base = maxColumnColors[maxIdx % maxColumnColors.length] || 'gray';
-const color = brightenColor(base, 40);
-  poly.originalColor = color;
-  poly.setStyle({
-    fillColor: color,
-    color: 'gray',   // ← ここを必ず 'gray'
-    weight: 2,
-    fillOpacity: 1
-  });
-});
-
-    const headerRow = document.getElementById("headerRow");
-    Array.from(headerRow.children).slice(1, DATA_COLUMNS).forEach((th,i)=>{
-      const color = brightenColor(maxColumnColors[i % maxColumnColors.length], 40);
-      const item=document.createElement("div");
-      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;
-background:${color};margin-right:5px;border:1px solid #000;"></span>${th.innerText}`;
-      legendDiv.appendChild(item);
-    });
-
-  } else {
-    let minVal=parseFloat(document.getElementById("minValue").value);
-    let maxVal=parseFloat(document.getElementById("maxValue").value);
-    let steps=parseInt(document.getElementById("steps").value);
-    if(isNaN(minVal)) minVal=0; if(isNaN(maxVal)) maxVal=100; if(isNaN(steps)||steps<1) steps=10;
-
-    polygonMap.forEach(({poly,row})=>{
-  let val=parseFloat(row.children[columnKey]?.innerText);
-  if(isNaN(val)||val<=0){ 
-  poly.originalColor = null;  // ←これが超重要
-  poly.setStyle({
-    fillColor: '#999',
-    color: '#666',
-    fillOpacity: 0.4
-  }); 
-  return; 
-}
-  let normalized=(val-minVal)/(maxVal-minVal);
-  if(normalized<0) normalized=0;
-  if(normalized>1) normalized=1;
-  let idx=Math.floor(normalized*steps);
-  if(idx>=colors10.length) idx=colors10.length-1;
-  const bright = brightenColor(colors10[idx], 40);
-poly.originalColor = bright;
-poly.setStyle({
-  fillColor: bright,
-    color: 'gray',   // ← ここも固定
-    weight: 2,
-    fillOpacity: 1
-  });
-});
-
-    for(let i=0;i<steps;i++){
-      let start=(minVal+i*(maxVal-minVal)/steps).toFixed(0);
-      let end=(minVal+(i+1)*(maxVal-minVal)/steps).toFixed(0);
-      const item=document.createElement("div");
-      item.innerHTML=`<span style="display:inline-block;width:20px;height:20px;background:${brightenColor(colors10[i]||colors10[colors10.length-1], 40)};margin-right:5px;border:1px solid #000;"></span>${start} ～ ${end}`;
-      legendDiv.appendChild(item);
+    if(!val){
+      poly.originalColor = null;
+      poly.setStyle({
+        fillColor:'#999',
+        color:'#666',
+        fillOpacity:0.4
+      });
+      return;
     }
+
+    const c = colorMap[val];
+    poly.originalColor = c;
+
+    poly.setStyle({
+      fillColor:c,
+      color:'gray',
+      weight:2,
+      fillOpacity:1
+    });
+  });
+
+  // 凡例
+  uniqueVals.forEach(v=>{
+    const color=colorMap[v];
+    const item=document.createElement("div");
+    item.innerHTML=`
+      <span style="display:inline-block;width:20px;height:20px;background:${color};margin-right:5px;border:1px solid #000;"></span>
+      ${v}
+    `;
+    legendDiv.appendChild(item);
+  });
+
+}
+else if(columnKey==="rowMaxColumn"){
+
+  // ===== 行内最大値 =====
+
+  const headerCells = Array.from(document.querySelectorAll("#headerRow th"));
+
+  // 凡例（列名）
+  headerCells.slice(1, DATA_COLUMNS).forEach((th,i)=>{
+    const color = brightenColor(maxColumnColors[i % maxColumnColors.length], 40);
+
+    const item=document.createElement("div");
+    item.innerHTML=`
+      <span style="display:inline-block;width:20px;height:20px;
+      background:${color};margin-right:5px;border:1px solid #000;"></span>
+      ${th.innerText}
+    `;
+    legendDiv.appendChild(item);
+  });
+
+  polygonMap.forEach(({poly,row})=>{
+
+    const nums = Array.from(row.children)
+      .slice(1, DATA_COLUMNS)
+      .map(td=>{
+        const v = parseFloat(td.innerText);
+        return isNaN(v) ? null : v;
+      });
+
+    const validNums = nums.filter(v=>v!==null);
+
+    if(validNums.length===0){
+      poly.originalColor=null;
+      poly.setStyle({
+        fillColor:'#999',
+        color:'#666',
+        fillOpacity:0.4
+      });
+      return;
+    }
+
+    const maxVal = Math.max(...validNums);
+    const maxIdx = nums.indexOf(maxVal);
+
+    const base = maxColumnColors[maxIdx % maxColumnColors.length];
+    const color = brightenColor(base, 40);
+
+    poly.originalColor = color;
+
+    poly.setStyle({
+      fillColor:color,
+      color:'gray',
+      weight:2,
+      fillOpacity:1
+    });
+
+    // ⭐ここで表示更新
+    const maxName = headerCells[maxIdx+1]?.innerText || "";
+    row.querySelector(".landUseCell").innerText = `${maxName}：${maxVal}`;
+
+  });
+
+}
+else{
+
+  // ===== 数値グラデーション =====
+
+  let minVal=parseFloat(document.getElementById("minValue").value);
+  let maxVal=parseFloat(document.getElementById("maxValue").value);
+  let steps=parseInt(document.getElementById("steps").value);
+
+  if(isNaN(minVal)) minVal=0;
+  if(isNaN(maxVal)) maxVal=100;
+  if(isNaN(steps)||steps<1) steps=10;
+
+  polygonMap.forEach(({poly,row})=>{
+    let val=parseFloat(row.children[columnKey]?.innerText);
+
+    if(isNaN(val)||val<=0){
+      poly.originalColor = null;
+      poly.setStyle({
+        fillColor:'#999',
+        color:'#666',
+        fillOpacity:0.4
+      });
+      return;
+    }
+
+    let normalized=(val-minVal)/(maxVal-minVal);
+    normalized=Math.max(0,Math.min(1,normalized));
+
+    let idx=Math.floor(normalized*steps);
+    if(idx>=colors10.length) idx=colors10.length-1;
+
+    const bright = brightenColor(colors10[idx], 40);
+
+    poly.originalColor = bright;
+
+    poly.setStyle({
+      fillColor:bright,
+      color:'gray',
+      weight:2,
+      fillOpacity:1
+    });
+  });
+
+  for(let i=0;i<steps;i++){
+    let start=(minVal+i*(maxVal-minVal)/steps).toFixed(0);
+    let end=(minVal+(i+1)*(maxVal-minVal)/steps).toFixed(0);
+
+    const item=document.createElement("div");
+    item.innerHTML=`
+      <span style="display:inline-block;width:20px;height:20px;background:${brightenColor(colors10[i]||colors10[colors10.length-1], 40)};margin-right:5px;border:1px solid #000;"></span>
+      ${start} ～ ${end}
+    `;
+    legendDiv.appendChild(item);
   }
 }
-
+}
 function importCSV(){
   const input=document.createElement("input");
   input.type="file"; input.accept=".csv"; input.style.display="none";
@@ -557,6 +619,7 @@ function importCSV(){
 
         if(vals[15]) tr.querySelector(".areaCell").innerText = (parseFloat(vals[15])/10000).toFixed(1);
         tr.querySelector(".landUseCell").innerText=vals[16]||"";
+        tr.originalLandUse = vals[16] || "";
 
         const polyVal=vals[17]||"";
         if(polyVal){
@@ -594,6 +657,7 @@ showOnlyNameAndSelected("landUseCell");
 }
 
 document.getElementById("importCsvBtn").addEventListener("click",importCSV);
+document.getElementById("locationBtn").addEventListener("click", showCurrentLocation);
 document.getElementById("applyColorScale").addEventListener("click",()=>recolorPolygonsByColumn(document.getElementById("colorColumnSelect").value));
 
 const rightPanel = document.getElementById("rightPanel");
@@ -694,10 +758,22 @@ document.getElementById("colorColumnSelect").addEventListener("change", e=>{
   recolorPolygonsByColumn(val);
 
   if(val === "landUseCell"){
+    document.querySelectorAll("#tableBody tr").forEach(tr=>{
+      const td = tr.querySelector(".landUseCell");
+      if(td){
+        td.innerText = tr.originalLandUse || "";
+      }
+    });
+
     showOnlyNameAndSelected("landUseCell");
-  } else if(val === "rowMaxColumn"){
-    showAllColumns();
-  } else {
+  }
+
+  else if(val === "rowMaxColumn"){
+    // ★ここ追加
+    showOnlyNameAndSelected("landUseCell");
+  }
+
+  else {
     showOnlyNameAndSelected(parseInt(val));
   }
 });
