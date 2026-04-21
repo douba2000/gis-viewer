@@ -227,6 +227,7 @@ tbody tr:hover {
     </div>
     <div id="controlsBody">
       <button id="importCsvBtn">CSV読み込み</button>
+<button id="locationBtn">現在地</button>
       <label>色分け列: <select id="colorColumnSelect"></select></label>
       <label>最小値: <input id="minValue" type="number" placeholder="自動"></label>
       <label>最大値: <input id="maxValue" type="number" placeholder="自動"></label>
@@ -264,6 +265,43 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 }).addTo(map);
 
 let polygonMap=[], selectedRow=null, selectedPolygons=[], DATA_COLUMNS=15;
+// ===== 現在地表示 =====
+let currentLocationMarker = null;
+let currentLocationCircle = null;
+
+function showCurrentLocation() {
+  map.locate({
+    setView: true,
+    maxZoom: 17,
+    enableHighAccuracy: true
+  });
+}
+
+map.on("locationfound", function(e) {
+
+  if (currentLocationMarker) map.removeLayer(currentLocationMarker);
+  if (currentLocationCircle) map.removeLayer(currentLocationCircle);
+
+  // ピン
+  currentLocationMarker = L.marker(e.latlng)
+    .addTo(map)
+   
+
+  // ⭐ここが「青丸」
+  currentLocationCircle = L.circle(e.latlng, {
+    radius:5,   // ←ここを変えるとサイズ変わる
+    color: '#3399ff',
+    fillColor: '#3399ff',
+    fillOpacity: 0.3
+  }).addTo(map);
+
+});
+
+map.on("locationerror", function() {
+  alert("現在地取れない");
+});
+
+
 const colors10=['#0000ff','#0040ff','#0080ff','#00bfff','#00ffbf','#00ff00','#ffff00','#ffbf00','#ff8000','#ff0000'];
 const maxColumnColors = [
  '#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd',
@@ -619,6 +657,7 @@ showOnlyNameAndSelected("landUseCell");
 }
 
 document.getElementById("importCsvBtn").addEventListener("click",importCSV);
+document.getElementById("locationBtn").addEventListener("click", showCurrentLocation);
 document.getElementById("applyColorScale").addEventListener("click",()=>recolorPolygonsByColumn(document.getElementById("colorColumnSelect").value));
 
 const rightPanel = document.getElementById("rightPanel");
